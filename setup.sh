@@ -14,3 +14,7 @@ echo ">>Installing PM2 Package Manager"
 npm install pm2@latest -g
 echo ">>Listing PM2 Nodes"
 pm2 list
+echo ">>Killing all nodes"
+pm2 kill
+echo ">>Booting Server"
+pm2 reload ecosystem.config.js
