@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { ethers } = require("ethers");
-const { ABI } = require("../src/ERC20");
+const { ABI } = require("./ERC20");
 const contractAddress = "0x7ef0bc63e77a27c96a3788fd1ce9d431c577ccae";
 
 const func = async () => {
