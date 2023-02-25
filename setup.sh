@@ -1,3 +1,5 @@
+echo ">>Installing NodeJs"
+sudo apt install npm
 echo ">>Stashing Branch Changes"
 git stash
 echo ">>Pulling Latest Branch Changes"
