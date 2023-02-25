@@ -1,6 +1,8 @@
-echo "Stashing Branch Changes"
+echo ">>Stashing Branch Changes"
 git stash
-echo "Pulling Latest Branch Changes"
+echo ">>Pulling Latest Branch Changes"
 git pull
-echo "Listing PM2 Nodes"
+echo ">>Installing NodeJs Packages"
+npm i
+echo ">>Listing PM2 Nodes"
 pm2 list
