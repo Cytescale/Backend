@@ -51,7 +51,6 @@ class Server {
           console.log(`stdout: ${stdout}`);
         }
       );
-      console.log(`Project rebuild result`);
       res.send("Project rebuild response").status(200).end();
       next();
     });
