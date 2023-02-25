@@ -28,6 +28,32 @@ class Server {
     app.get("/check", (req, res) => {
       res.send("Hello World 👋");
     });
+
+    app.post("/githook", async (req, res, next) => {
+      console.log("Git update pushed");
+      exec(
+        `
+      cd /home/ubuntu/Backend/ && 
+      git stash && 
+      git pull &&
+      npm install &&
+      pm2 restart Backend Instance`,
+        (error, stdout, stderr) => {
+          if (error) {
+            console.log(`error: ${error.message}`);
+            return;
+          }
+          if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            return;
+          }
+          console.log(`stdout: ${stdout}`);
+        }
+      );
+      console.log(`Project rebuild result`);
+      res.send("Project rebuild response").status(200).end();
+      next();
+    });
   }
 
   server_init(app) {

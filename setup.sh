@@ -18,3 +18,5 @@ echo ">>Killing all nodes"
 pm2 kill
 echo ">>Booting Server"
 pm2 reload ecosystem.config.js
+echo ">>Server started"
+pm2 list
