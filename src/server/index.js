@@ -26,18 +26,19 @@ class Server {
 
   setup_routes(app) {
     app.get("/check", (req, res) => {
-      res.send("Hello World 👋");
+      console.log("✔️ Server Check");
+      res.send("Hello Worlsd 👋");
     });
 
     app.post("/githook", async (req, res, next) => {
-      console.log("Git update pushed");
+      console.log("🤖 Git update pushed");
       exec(
         `
       cd /home/ubuntu/Backend/ && 
       git stash && 
       git pull &&
       npm install &&
-      pm2 restart Backend Instance`,
+      pm2 restart Backend`,
         (error, stdout, stderr) => {
           if (error) {
             console.log(`error: ${error.message}`);
