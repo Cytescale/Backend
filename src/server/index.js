@@ -27,7 +27,7 @@ class Server {
   setup_routes(app) {
     app.get("/check", (req, res) => {
       console.log("✔️ Server Check");
-      res.send("Hello Worlsd 👋");
+      res.send("Hello World 👋");
     });
 
     app.post("/githook", async (req, res, next) => {
