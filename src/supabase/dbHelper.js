@@ -14,6 +14,7 @@ class DBHelper {
       console.error("No Supa client for dbhelper");
     }
     this.supaClient = supaClient;
+    console.log("✔️ Databse helper initialised");
   }
 
   async getRecordbyRID(rid) {

@@ -244,6 +244,73 @@ class Router {
       }
       next();
     });
+
+    app.post("/api/v1/createUser", async (req, res, next) => {
+      try {
+        const account_type = req.body.account_type;
+        const b64auth = (req.headers.authorization || "").split(" ")[1] || "";
+        const [login, password] = Buffer.from(b64auth, "base64")
+          .toString()
+          .split(":");
+        if (!login || !password || !Number.isInteger(account_type))
+          throw "Insufficient user data";
+        const supaRes = await this.supaclient.signUpFunc(login, password);
+        if (supaRes.errorBool) throw supaRes.errorMessage;
+        const access_token = supaRes.response.session.access_token;
+        const refresh_token = supaRes.response.session.refresh_token;
+        const got_uid = supaRes.response.user.id;
+        const dbres = this.dbhelper.createBaseUser(got_uid, account_type);
+        if (dbres.errorBool) throw dbres.errorMessage;
+        res
+          .send(
+            ServerResponse(
+              {
+                accessToken: access_token,
+                refreshToken: refresh_token,
+              },
+              false,
+              null,
+              200
+            )
+          )
+          .end();
+      } catch (e) {
+        res.send(ServerResponse(null, true, e, 200)).end();
+      }
+      next();
+    });
+
+    app.post("/api/v1/login", async (req, res, next) => {
+      try {
+        const b64auth = (req.headers.authorization || "").split(" ")[1] || "";
+        const [login, password] = Buffer.from(b64auth, "base64")
+          .toString()
+          .split(":");
+        if (!login || !password) throw "Insufficient user data";
+        const supaRes = await this.supaclient.signInFunc(login, password);
+        if (supaRes.errorBool) throw supaRes.errorMessage;
+        const access_token = supaRes.response.session.access_token;
+        const refresh_token = supaRes.response.session.refresh_token;
+        res
+          .send(
+            ServerResponse(
+              {
+                accessToken: access_token,
+                refreshToken: refresh_token,
+              },
+              false,
+              null,
+              200
+            )
+          )
+          .end();
+      } catch (e) {
+        res.send(ServerResponse(null, true, e, 200)).end();
+      }
+      next();
+    });
+
+    console.log("✔️ API routed initialized");
   }
 }
 

@@ -24,6 +24,9 @@ class SupaHelper {
       process.env.SUPABASE_CLIENT,
       process.env.SUPABASE_API_KEY
     );
+    if (this.client) {
+      console.log("✔️ Supabase client initialised");
+    }
   }
 
   getClient() {
@@ -56,9 +59,6 @@ class SupaHelper {
     }
   }
 
-  async createUserDoctor() {}
-
-  async createUserPatient() {}
 }
 
 module.exports = { SupaHelper, MRepsonse };
