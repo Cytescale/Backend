@@ -25,7 +25,7 @@ class DBHelper {
         .eq("id", rid);
       if (error || !data) throw error ? error : "Some error occurred";
       if (data.length == 0) throw "No such records found";
-      const chain_record_data = await recordDataByTxn(data.txn_hash);
+      const chain_record_data = await recordDataByTxn(data[0].txn_hash);
       if (chain_record_data.errorBool) throw chain_record_data.errorMessage;
       return MRepsonse(chain_record_data.response, false, null);
     } catch (e) {

@@ -1,4 +1,5 @@
 "use strict";
+require("dotenv").config();
 const { createClient } = require("@supabase/supabase-js");
 
 function MRepsonse(responseData, errorBool, errorMessage) {
@@ -20,8 +21,8 @@ function MRepsonse(responseData, errorBool, errorMessage) {
 class SupaHelper {
   constructor() {
     this.client = createClient(
-      "https://aijtgodqwbhnsezitung.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpanRnb2Rxd2JobnNleml0dW5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzUwODc4NTMsImV4cCI6MTk5MDY2Mzg1M30.KOQuMklW0aqN_EqOOVppNCldg11TFgu9wd1xYZmPmks"
+      process.env.SUPABASE_CLIENT,
+      process.env.SUPABASE_API_KEY
     );
   }
 

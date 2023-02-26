@@ -4,6 +4,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const parser = require("ua-parser-js");
 const { exec } = require("child_process");
+const { DBHelper } = require("../supabase/dbHelper");
 
 const router = express.Router({
   caseSensitive: false,
@@ -16,18 +17,16 @@ const corsOptions = {
 };
 
 class Server {
-  constructor() {
+  constructor(supaclient, dbhelper) {
+    this.supaclient = supaclient;
+    this.dbhelper = dbhelper;
     this.app = express();
     this.server_init(this.app);
     this.shutdown_handlers();
+    const router = new Router(this.app, this.supaclient, this.dbhelper);
   }
 
   setup_routes(app) {
-    app.get("/check", (req, res) => {
-      console.log("✔️ Server Check");
-      res.send("Hello World 👋");
-    });
-
     app.post("/githook", async (req, res, next) => {
       console.log("🤖 Git update pushed");
       exec(
@@ -85,6 +84,75 @@ class Server {
     process.on("exit", function (code) {
       console.log("Server shutdown ");
       console.warn("About to exit with code:", code);
+    });
+  }
+}
+
+const ServerResponse = (responseData, errorBool, errorMessage, statusCode) => {
+  if (errorBool) {
+    return {
+      errorBool: errorBool,
+      errorMessage: errorMessage,
+      response: null,
+      status: statusCode ? statusCode : 600,
+      timestamp: Date.now(),
+    };
+  } else {
+    return {
+      errorBool: false,
+      errorMessage: null,
+      response: responseData,
+      status: statusCode ? statusCode : 600,
+      timestamp: Date.now(),
+    };
+  }
+};
+
+class Router {
+  constructor(app, supaclient, dbhelper) {
+    this.supaclient = supaclient;
+    this.dbhelper = dbhelper;
+    this.app = app;
+    this.routes_start(this.app);
+  }
+
+  routes_start(app) {
+    app.get("/check", (req, res, next) => {
+      console.log("✔️ Server Check");
+      res.send("Hello World 👋");
+      next();
+    });
+
+    app.get("/api/v1/getUserData", async (req, res, next) => {
+      const uid = req.query.uid;
+      try {
+        if (!uid) throw "No uid supplied";
+        const dbRes = await this.dbhelper.getUserData(uid);
+        if (dbRes.errorBool) throw dbRes.errorMessage;
+        if (dbRes.response)
+          res.send(ServerResponse(dbRes.response, false, null, 200)).end();
+      } catch (e) {
+        res.send(ServerResponse(null, true, e, 200)).end();
+      }
+      next();
+    });
+
+    app.get("/api/v1/getRecordDataByRID", async (req, res, next) => {
+      const rid = req.query.rid;
+      try {
+        if (!rid) throw "No uid supplied";
+        const dbRes = await this.dbhelper.getRecordbyRID(rid);
+        if (dbRes.errorBool) throw dbRes.errorMessage;
+        if (dbRes.response)
+          res.send(ServerResponse(dbRes.response, false, null, 200)).end();
+      } catch (e) {
+        res.send(ServerResponse(null, true, e, 200)).end();
+      }
+      next();
+    });
+
+    app.post("/api/v1/updateUserData", (req, res, next) => {
+      next();
     });
   }
 }

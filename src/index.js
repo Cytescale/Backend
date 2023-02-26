@@ -16,21 +16,6 @@ let uid = "b987cca1-3ed4-4780-8969-0e811fbba837";
 //t4 = lost
 //t5 = 0x8230329c536a1e6f1aadc157dd6f9524c84b47a5081881b8a5cb081455196f02
 
-// const server = new Server();
 const supa = new SupaHelper();
 const dbhelp = new DBHelper(supa.getClient());
-dbhelp
-  .getBaseRecord(4709754275)
-  .then((r) => console.log(r))
-  .catch((e) => console.log(e));
-
-dbhelp
-  .createBaseRecord(
-    uid,
-    uid,
-    "5",
-    ["treat2", "treat3", "treat8", "treat2", "treat67"],
-    ["shr1"]
-  )
-  .then((r) => console.log(r))
-  .catch((e) => console.log(e));
+const server = new Server(supa, dbhelp);

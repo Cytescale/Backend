@@ -52,8 +52,6 @@ const decodeTxn = async (txn) => {
 
 const recordDataByTxn = async (txn) => {
   try {
-    const addChk = ethers.isAddress(txn);
-    console.log(addChk);
     let raw_res = await decodeTxn(txn);
     if (raw_res.errorBool) throw raw_res.errorMessage;
     return MRepsonse(
