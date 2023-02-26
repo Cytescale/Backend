@@ -2,29 +2,58 @@ const ABI = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "num",
-        type: "uint256",
+        internalType: "string",
+        name: "_creatorUID",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "_patientUID",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "_treatID",
+        type: "string",
+      },
+      {
+        internalType: "string[]",
+        name: "_medArr",
+        type: "string[]",
       },
     ],
-    name: "store",
+    name: "setRecord",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
   {
     inputs: [],
-    name: "retrieve",
+    name: "getRecord",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "string",
         name: "",
-        type: "uint256",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+      {
+        internalType: "string[]",
+        name: "",
+        type: "string[]",
       },
     ],
     stateMutability: "view",
     type: "function",
   },
 ];
-
 module.exports = { ABI };
