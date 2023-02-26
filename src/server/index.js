@@ -149,10 +149,13 @@ class Router {
       }
       next();
     });
+
+    
     app.get("/api/v1/getRecordsDataByPID", async (req, res, next) => {
       const pid = req.query.pid;
       try {
         const dbRes = await this.dbhelper.getRecordsbyPID(pid);
+
         if (dbRes.errorBool) throw dbRes.errorMessage;
         if (dbRes.response)
           res.send(ServerResponse(dbRes.response, false, null, 200)).end();
@@ -167,8 +170,18 @@ class Router {
       try {
         const dbRes = await this.dbhelper.getRelationsByDid(did);
         if (dbRes.errorBool) throw dbRes.errorMessage;
-        if (dbRes.response)
-          res.send(ServerResponse(dbRes.response, false, null, 200)).end();
+        let relatns = dbRes.response;
+        for (let i = 0; i < relatns.length; i++) {
+          let patientData = await this.dbhelper.getUserData(
+            relatns[i].patient_uid
+          );
+          if (!patientData.errorBool) {
+            relatns[i].patientData = patientData.response;
+          } else {
+            relatns[i].patientData = null;
+          }
+        }
+        res.send(ServerResponse(relatns, false, null, 200)).end();
       } catch (e) {
         res.send(ServerResponse(null, true, e, 200)).end();
       }
@@ -184,7 +197,7 @@ class Router {
         const dbRes = await this.dbhelper.createBaseRecord(
           creator_uid,
           patient_uid,
-          "3",
+          treat,
           med_arr
         );
         if (dbRes.errorBool) throw dbRes.errorMessage;
@@ -289,7 +302,6 @@ class Router {
         if (!login || !password) throw "Insufficient user data";
         const supaRes = await this.supaclient.signInFunc(login, password);
         if (supaRes.errorBool) throw supaRes.errorMessage;
-        console.log(supaRes);
         const uid = supaRes.response.user.id;
         const userData = await this.dbhelper.getUserData(uid);
         if (userData.errorBool) throw userData.errorMessage;

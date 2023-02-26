@@ -65,9 +65,9 @@ class DBHelper {
       if (!txn_rcpt.response.hash)
         throw "Error occurred on blockchain while creating transaction";
       const txn_hash = txn_rcpt.response.hash;
-      
+
       const record_id = Math.floor(Math.random() * 10000000000);
-      
+
       const { data, error } = await this.supaClient
         .from(RECORD_TABLE)
         .insert({
@@ -185,7 +185,12 @@ class DBHelper {
       for (let i = 0; i < data.length; i++) {
         const chain_record_data = await recordDataByTxn(data[i].txn_hash);
         if (!chain_record_data.errorBool) {
-          records.push(chain_record_data.response);
+          let rec = chain_record_data.response;
+          rec.id = data[i].id;
+          rec.created_at = data[i].created_at;
+          rec.txn_hash = data[i].txn_hash;
+          console.log(rec);
+          records.push(rec);
         }
       }
       if (records.length > 0) return MRepsonse(records, false, null);
