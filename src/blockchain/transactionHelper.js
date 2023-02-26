@@ -2,13 +2,16 @@ require("dotenv").config();
 const { ethers } = require("ethers");
 const { ABI } = require("./ERC20");
 const { MRepsonse } = require("../supabase/superHelper");
-const contractAddress = "0x3FA39F96Da9f7A0648d0b2764BBefb8031D6838E";
 
 const setRecord = async (creatorUID, patientUID, treatID, medArr) => {
   try {
     const provider = new ethers.JsonRpcProvider(process.env.NODE_PROVIDER);
     const wall = new ethers.Wallet(process.env.WALLET_PVT_KEY, provider);
-    const contract = new ethers.Contract(contractAddress, ABI, wall);
+    const contract = new ethers.Contract(
+      process.env.CONTRACT_ADDRESS,
+      ABI,
+      wall
+    );
     const storeRes = await contract.setRecord(
       creatorUID,
       patientUID,
@@ -16,7 +19,6 @@ const setRecord = async (creatorUID, patientUID, treatID, medArr) => {
       medArr
     );
     return MRepsonse(storeRes, false, null);
-    
   } catch (e) {
     return MRepsonse(null, true, e);
   }

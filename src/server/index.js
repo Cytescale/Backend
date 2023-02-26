@@ -5,8 +5,6 @@ const bodyParser = require("body-parser");
 const parser = require("ua-parser-js");
 const { exec } = require("child_process");
 
-const app = express();
-
 const router = express.Router({
   caseSensitive: false,
   strict: true,

@@ -1,4 +1,9 @@
+require("dotenv").config();
 const { MRepsonse } = require("./superHelper");
+const {
+  setRecord,
+  recordDataByTxn,
+} = require("../blockchain/transactionHelper");
 const USER_TABLE = "user_table";
 const RECORD_TABLE = "user_records_table";
 const RELATION_TABLE = "relation_table";
@@ -9,6 +14,23 @@ class DBHelper {
       console.error("No Supa client for dbhelper");
     }
     this.supaClient = supaClient;
+  }
+
+  async getRecordbyRID(rid) {
+    try {
+      if (!rid) throw "RID is not provided";
+      const { data, error } = await this.supaClient
+        .from(RECORD_TABLE)
+        .select()
+        .eq("id", rid);
+      if (error || !data) throw error ? error : "Some error occurred";
+      if (data.length == 0) throw "No such records found";
+      const chain_record_data = await recordDataByTxn(data.txn_hash);
+      if (chain_record_data.errorBool) throw chain_record_data.errorMessage;
+      return MRepsonse(chain_record_data.response, false, null);
+    } catch (e) {
+      return MRepsonse(null, true, e);
+    }
   }
 
   async getBaseRecord(rid) {
@@ -36,6 +58,16 @@ class DBHelper {
     try {
       if (!creator_uid || !patient_uid || !treat_id || !med_arr || !share_arr)
         throw "Insufficient data";
+      const txn_rcpt = await setRecord(
+        creator_uid,
+        patient_uid,
+        treat_id,
+        med_arr
+      );
+      if (txn_rcpt.errorBool) throw txn_rcpt.errorMessage;
+      if (!txn_rcpt.response.hash)
+        throw "Error occurred on blockchain while creating transaction";
+      const txn_hash = txn_rcpt.response.hash;
       const record_id = Math.floor(Math.random() * 10000000000);
       const { data, error } = await this.supaClient
         .from(RECORD_TABLE)
@@ -45,7 +77,7 @@ class DBHelper {
           patient_uid: patient_uid,
           treat_id: treat_id,
           med_arr: med_arr,
-          share_arr: share_arr,
+          txn_hash: txn_hash,
         })
         .select();
       if (error || !data) throw error ? error : "Some error occurred";
