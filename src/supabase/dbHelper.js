@@ -27,6 +27,7 @@ class DBHelper {
       if (data.length == 0) throw "No such records found";
       const chain_record_data = await recordDataByTxn(data[0].txn_hash);
       if (chain_record_data.errorBool) throw chain_record_data.errorMessage;
+
       return MRepsonse(chain_record_data.response, false, null);
     } catch (e) {
       return MRepsonse(null, true, e);
@@ -48,16 +49,11 @@ class DBHelper {
     }
   }
 
-  async createBaseRecord(
-    creator_uid,
-    patient_uid,
-    treat_id,
-    med_arr,
-    share_arr
-  ) {
+  async createBaseRecord(creator_uid, patient_uid, treat_id, med_arr) {
     try {
-      if (!creator_uid || !patient_uid || !treat_id || !med_arr || !share_arr)
+      if (!creator_uid || !patient_uid || !treat_id || !med_arr)
         throw "Insufficient data";
+      if (med_arr.length == 0) throw "Insufficient medicine data";
       const txn_rcpt = await setRecord(
         creator_uid,
         patient_uid,
@@ -182,7 +178,15 @@ class DBHelper {
         .eq("patient_uid", uid);
       if (error || !data) throw error ? error : "Some error occurred";
       if (data.length == 0) throw "No such records found";
-      if (data) return MRepsonse(data, false, null);
+      let records = [];
+      for (let i = 0; i < data.length; i++) {
+        const chain_record_data = await recordDataByTxn(data[i].txn_hash);
+        if (!chain_record_data.errorBool) {
+          records.push(chain_record_data.response);
+        }
+      }
+      if (records.length > 0) return MRepsonse(records, false, null);
+      else throw "Cannot compile records";
     } catch (e) {
       return MRepsonse(null, true, e);
     }

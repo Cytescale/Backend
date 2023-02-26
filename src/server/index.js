@@ -4,7 +4,6 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const parser = require("ua-parser-js");
 const { exec } = require("child_process");
-const { DBHelper } = require("../supabase/dbHelper");
 
 const router = express.Router({
   caseSensitive: false,
@@ -150,8 +149,99 @@ class Router {
       }
       next();
     });
+    app.get("/api/v1/getRecordsDataByPID", async (req, res, next) => {
+      const pid = req.query.pid;
+      try {
+        const dbRes = await this.dbhelper.getRecordsbyPID(pid);
+        if (dbRes.errorBool) throw dbRes.errorMessage;
+        if (dbRes.response)
+          res.send(ServerResponse(dbRes.response, false, null, 200)).end();
+      } catch (e) {
+        res.send(ServerResponse(null, true, e, 200)).end();
+      }
+      next();
+    });
 
-    app.post("/api/v1/updateUserData", (req, res, next) => {
+    app.get("/api/v1/getRelationsByDID", async (req, res, next) => {
+      const did = req.query.did;
+      try {
+        const dbRes = await this.dbhelper.getRelationsByDid(did);
+        if (dbRes.errorBool) throw dbRes.errorMessage;
+        if (dbRes.response)
+          res.send(ServerResponse(dbRes.response, false, null, 200)).end();
+      } catch (e) {
+        res.send(ServerResponse(null, true, e, 200)).end();
+      }
+      next();
+    });
+
+    app.post("/api/v1/createBaseRecord", async (req, res, next) => {
+      const creator_uid = req.body.creator_uid;
+      const patient_uid = req.body.patient_uid;
+      const treat = req.body.treat;
+      const med_arr = req.body.med_arr;
+      try {
+        const dbRes = await this.dbhelper.createBaseRecord(
+          creator_uid,
+          patient_uid,
+          "3",
+          med_arr
+        );
+        if (dbRes.errorBool) throw dbRes.errorMessage;
+        res.send(ServerResponse(dbRes.response, false, null, 200)).end();
+      } catch (e) {
+        res.send(ServerResponse(null, true, e, 200)).end();
+      }
+      next();
+    });
+
+    app.post("/api/v1/updateUserData", async (req, res, next) => {
+      const uid = req.body.uid;
+      const fname = req.body.fname;
+      const lname = req.body.lname;
+      const account_type = req.body.account_type;
+      const profile_photo_url = req.body.profile_photo_url;
+      const initiated = req.body.initiated;
+      try {
+        const dbRes = await this.dbhelper.updateUser(
+          uid,
+          fname,
+          lname,
+          account_type,
+          profile_photo_url,
+          initiated
+        );
+        if (dbRes.errorBool) throw dbRes.errorMessage;
+        res.send(ServerResponse(dbRes.response, false, null, 200)).end();
+      } catch (e) {
+        res.send(ServerResponse(null, true, e, 200)).end();
+      }
+      next();
+    });
+
+    app.post("/api/v1/createBaseUser", async (req, res, next) => {
+      const uid = req.body.uid;
+      const account_type = req.body.account_type;
+      try {
+        const dbRes = await this.dbhelper.createBaseUser(uid, account_type);
+        if (dbRes.errorBool) throw dbRes.errorMessage;
+        res.send(ServerResponse(dbRes.response, false, null, 200)).end();
+      } catch (e) {
+        res.send(ServerResponse(null, true, e, 200)).end();
+      }
+      next();
+    });
+
+    app.post("/api/v1/createRelation", async (req, res, next) => {
+      const pid = req.body.pid;
+      const did = req.body.did;
+      try {
+        const dbRes = await this.dbhelper.createRelation(pid, did);
+        if (dbRes.errorBool) throw dbRes.errorMessage;
+        res.send(ServerResponse(dbRes.response, false, null, 200)).end();
+      } catch (e) {
+        res.send(ServerResponse(null, true, e, 200)).end();
+      }
       next();
     });
   }
