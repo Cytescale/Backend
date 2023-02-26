@@ -289,12 +289,15 @@ class Router {
         if (!login || !password) throw "Insufficient user data";
         const supaRes = await this.supaclient.signInFunc(login, password);
         if (supaRes.errorBool) throw supaRes.errorMessage;
+        console.log(supaRes);
+        const uid = supaRes.response.user.id;
         const access_token = supaRes.response.session.access_token;
         const refresh_token = supaRes.response.session.refresh_token;
         res
           .send(
             ServerResponse(
               {
+                uid: uid,
                 accessToken: access_token,
                 refreshToken: refresh_token,
               },
