@@ -32,7 +32,6 @@ getRecordByTxn(data)
     console.log(e);
   });
 
-///const server = new Server();
-
+const server = new Server();
 const supa = new SupaHelper();
 const dbhelp = new DBHelper(supa.getClient());
