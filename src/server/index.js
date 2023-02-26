@@ -291,6 +291,8 @@ class Router {
         if (supaRes.errorBool) throw supaRes.errorMessage;
         console.log(supaRes);
         const uid = supaRes.response.user.id;
+        const userData = await this.dbhelper.getUserData(uid);
+        if (userData.errorBool) throw userData.errorMessage;
         const access_token = supaRes.response.session.access_token;
         const refresh_token = supaRes.response.session.refresh_token;
         res
@@ -298,6 +300,7 @@ class Router {
             ServerResponse(
               {
                 uid: uid,
+                account_type: userData.response.account_type,
                 accessToken: access_token,
                 refreshToken: refresh_token,
               },

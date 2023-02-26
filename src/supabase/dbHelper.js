@@ -65,7 +65,9 @@ class DBHelper {
       if (!txn_rcpt.response.hash)
         throw "Error occurred on blockchain while creating transaction";
       const txn_hash = txn_rcpt.response.hash;
+      
       const record_id = Math.floor(Math.random() * 10000000000);
+      
       const { data, error } = await this.supaClient
         .from(RECORD_TABLE)
         .insert({

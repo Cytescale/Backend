@@ -16,6 +16,7 @@ function MRepsonse(responseData, errorBool, errorMessage) {
       response: responseData,
     };
   }
+  
 }
 
 class SupaHelper {
