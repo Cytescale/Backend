@@ -189,7 +189,6 @@ class DBHelper {
           rec.id = data[i].id;
           rec.created_at = data[i].created_at;
           rec.txn_hash = data[i].txn_hash;
-          console.log(rec);
           records.push(rec);
         }
       }
