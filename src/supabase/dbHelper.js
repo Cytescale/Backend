@@ -26,10 +26,14 @@ class DBHelper {
         .eq("id", rid);
       if (error || !data) throw error ? error : "Some error occurred";
       if (data.length == 0) throw "No such records found";
+      console.log(data);
       const chain_record_data = await recordDataByTxn(data[0].txn_hash);
       if (chain_record_data.errorBool) throw chain_record_data.errorMessage;
-
-      return MRepsonse(chain_record_data.response, false, null);
+      let record = chain_record_data.response;
+      record.created_at = data[0].created_at;
+      record.id = data[0].id;
+      record.txn_hash = data[0].txn_hash;
+      return MRepsonse(record, false, null);
     } catch (e) {
       return MRepsonse(null, true, e);
     }
