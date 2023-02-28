@@ -150,7 +150,6 @@ class Router {
       next();
     });
 
-    
     app.get("/api/v1/getRecordsDataByPID", async (req, res, next) => {
       const pid = req.query.pid;
       try {
@@ -278,6 +277,7 @@ class Router {
           .send(
             ServerResponse(
               {
+                uid: got_uid,
                 accessToken: access_token,
                 refreshToken: refresh_token,
               },
