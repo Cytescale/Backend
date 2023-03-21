@@ -15,6 +15,77 @@ class DBHelper {
     }
     this.supaClient = supaClient;
     console.log("✔️ Databse helper initialised");
+    this.init();
+  }
+
+  async init() {
+    const { create } = await import("ipfs-core");
+    const { concat } = await import("uint8arrays/concat");
+    const node = await create({});
+    console.log("✔️ IPFS Core initialised");
+    this.node = node;
+    this.concat = concat;
+    return node;
+  }
+
+  async getRecordFilebyCID(cid) {
+    try {
+      if (!cid) throw "Insufficient CID provided";
+      let buffer = new Uint8Array(0);
+      for await (const buf of this.node.cat(cid)) {
+        buffer = this.concat([buffer, buf], buffer.length + buf.length);
+      }
+      return MRepsonse({ data: buffer.toString() }, false, null);
+    } catch (e) {
+      console.log(e);
+      return MRepsonse(null, true, e);
+    }
+  }
+
+  async createRecord(creator_uid, patient_uid, treat_id, med_arr, fileData) {
+    try {
+      if (!creator_uid || !patient_uid || !treat_id) throw "Insufficient data";
+      if (!med_arr && !fileData) throw "Insufficient medicine data";
+      med_arr = med_arr.split(",");
+      const txn_rcpt = await setRecord(
+        creator_uid,
+        patient_uid,
+        treat_id,
+        med_arr
+      );
+      if (txn_rcpt.errorBool) throw txn_rcpt.errorMessage;
+      if (!txn_rcpt.response.hash)
+        throw "Error occurred on blockchain while creating transaction";
+      const txn_hash = txn_rcpt.response.hash;
+      const record_id = Math.floor(Math.random() * 10000000000);
+      let ipfsRes = null;
+      if (fileData) {
+        const contrctName = record_id + ".pdf";
+        const { cid } = await this.node.add({
+          path: contrctName,
+          content: fileData.buffer,
+        });
+        ipfsRes = cid.toString();
+        delete fileData.buffer;
+      }
+      const { data, error } = await this.supaClient
+        .from(RECORD_TABLE)
+        .insert({
+          id: record_id,
+          creator_uid: creator_uid,
+          patient_uid: patient_uid,
+          treat_id: treat_id,
+          med_arr: med_arr ? (med_arr.length > 0 ? med_arr : null) : null,
+          txn_hash: txn_hash,
+          metadata: fileData ? JSON.stringify(fileData) : null,
+          file_cid: ipfsRes ? ipfsRes : null,
+        })
+        .select();
+      if (error || !data) throw error ? error : "Some error occurred";
+      if (data) return MRepsonse(data[0], false, null);
+    } catch (e) {
+      return MRepsonse(null, true, e);
+    }
   }
 
   async getRecordbyRID(rid) {
@@ -26,13 +97,14 @@ class DBHelper {
         .eq("id", rid);
       if (error || !data) throw error ? error : "Some error occurred";
       if (data.length == 0) throw "No such records found";
-      console.log(data);
       const chain_record_data = await recordDataByTxn(data[0].txn_hash);
       if (chain_record_data.errorBool) throw chain_record_data.errorMessage;
       let record = chain_record_data.response;
       record.created_at = data[0].created_at;
       record.id = data[0].id;
       record.txn_hash = data[0].txn_hash;
+      record.file_cid = data[0].file_cid ? data[0].file_cid : null;
+      record.metadata = data[0].metadata ? data[0].metadata : null;
       return MRepsonse(record, false, null);
     } catch (e) {
       return MRepsonse(null, true, e);
@@ -193,6 +265,8 @@ class DBHelper {
           rec.id = data[i].id;
           rec.created_at = data[i].created_at;
           rec.txn_hash = data[i].txn_hash;
+          rec.file_cid = data[i].file_cid ? data[i].file_cid : null;
+          rec.metadata = data[i].metadata ? data[i].metadata : null;
           records.push(rec);
         }
       }

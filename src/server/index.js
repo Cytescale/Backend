@@ -1,9 +1,13 @@
 require("dotenv").config();
+const fs = require("node:fs");
+const multer = require("multer");
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const parser = require("ua-parser-js");
 const { exec } = require("child_process");
+
+const upload = multer({});
 
 const router = express.Router({
   caseSensitive: false,
@@ -22,6 +26,7 @@ class Server {
     this.app = express();
     this.server_init(this.app);
     this.shutdown_handlers();
+    this.gracefulShutdownHandler = this.gracefulShutdownHandler.bind(this);
     const router = new Router(this.app, this.supaclient, this.dbhelper);
   }
 
@@ -67,14 +72,12 @@ class Server {
 
   gracefulShutdownHandler(signal) {
     console.log(`⚠️  Caught ${signal}, gracefully shutting down`);
-    setTimeout(() => {
-      console.log("🤞 Shutting down application");
-      this.server &&
-        this.server.close(function () {
-          console.log("👋 All requests stopped, shutting down");
-          process.exit();
-        });
-    }, 0);
+    console.log("🤞 Shutting down application");
+    process.exit();
+    // this.server.close(function () {
+    //   console.log("👋 All requests stopped, shutting down");
+    //   process.exit();
+    // });
   }
 
   shutdown_handlers() {
@@ -292,6 +295,48 @@ class Router {
       }
       next();
     });
+
+    app.get("/api/v1/getRecordFileByCID", async (req, res, next) => {
+      const cid = req.query.cid;
+      try {
+        if (!cid) throw "No cid supplied";
+        
+        const dbRes = await this.dbhelper.getRecordFilebyCID(cid);
+        if (dbRes.errorBool) throw dbRes.errorMessage;
+        if (dbRes.response)
+          res.send(ServerResponse(dbRes.response, false, null, 200)).end();
+      } catch (e) {
+        res.send(ServerResponse(null, true, e, 200)).end();
+      }
+      next();
+    });
+
+    app.post(
+      "/api/v1/createRecord",
+      upload.single("fileData"),
+      async (req, res, next) => {
+        const creator_uid = req.body.creator_uid;
+        const patient_uid = req.body.patient_uid;
+        const treat = req.body.treat;
+        const med_arr = req.body.med_arr ? req.body.med_arr : null;
+        const fileData = req.file ? req.file : null;
+        try {
+          const dbRes = await this.dbhelper.createRecord(
+            creator_uid,
+            patient_uid,
+            treat,
+            med_arr ? med_arr.toString().replace(/^\s+|\s+$/gm, "") : null,
+            fileData ? fileData : null
+          );
+          if (dbRes.errorBool) throw dbRes.errorMessage;
+          res.send(ServerResponse(dbRes.response, false, null, 200)).end();
+        } catch (e) {
+          console.log(e);
+          res.send(ServerResponse(null, true, e, 200)).end();
+        }
+        next();
+      }
+    );
 
     app.post("/api/v1/login", async (req, res, next) => {
       try {
