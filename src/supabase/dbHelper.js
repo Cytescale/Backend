@@ -46,7 +46,7 @@ class DBHelper {
     try {
       if (!creator_uid || !patient_uid || !treat_id) throw "Insufficient data";
       if (!med_arr && !fileData) throw "Insufficient medicine data";
-      med_arr = med_arr.split(",");
+      med_arr = med_arr ? med_arr.split(",") : [];
       const txn_rcpt = await setRecord(
         creator_uid,
         patient_uid,

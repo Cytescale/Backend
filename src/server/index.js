@@ -300,7 +300,7 @@ class Router {
       const cid = req.query.cid;
       try {
         if (!cid) throw "No cid supplied";
-        
+
         const dbRes = await this.dbhelper.getRecordFilebyCID(cid);
         if (dbRes.errorBool) throw dbRes.errorMessage;
         if (dbRes.response)
@@ -318,7 +318,7 @@ class Router {
         const creator_uid = req.body.creator_uid;
         const patient_uid = req.body.patient_uid;
         const treat = req.body.treat;
-        const med_arr = req.body.med_arr ? req.body.med_arr : null;
+        let med_arr = req.body.med_arr ? req.body.med_arr : null;
         const fileData = req.file ? req.file : null;
         try {
           const dbRes = await this.dbhelper.createRecord(
