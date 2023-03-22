@@ -303,8 +303,7 @@ class Router {
 
         const dbRes = await this.dbhelper.getRecordFilebyCID(cid);
         if (dbRes.errorBool) throw dbRes.errorMessage;
-        if (dbRes.response)
-          res.send(ServerResponse(dbRes.response, false, null, 200)).end();
+        if (dbRes.response) res.send(dbRes.response.data).end();
       } catch (e) {
         res.send(ServerResponse(null, true, e, 200)).end();
       }

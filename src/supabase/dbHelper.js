@@ -35,7 +35,9 @@ class DBHelper {
       for await (const buf of this.node.cat(cid)) {
         buffer = this.concat([buffer, buf], buffer.length + buf.length);
       }
-      return MRepsonse({ data: buffer.toString() }, false, null);
+      const toSend = Buffer.from(buffer).toString("base64");
+      // console.log(toSend);
+      return MRepsonse({ data: toSend }, false, null);
     } catch (e) {
       console.log(e);
       return MRepsonse(null, true, e);
