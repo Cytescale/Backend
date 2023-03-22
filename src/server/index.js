@@ -300,10 +300,10 @@ class Router {
       const cid = req.query.cid;
       try {
         if (!cid) throw "No cid supplied";
-
         const dbRes = await this.dbhelper.getRecordFilebyCID(cid);
         if (dbRes.errorBool) throw dbRes.errorMessage;
-        if (dbRes.response) res.send(dbRes.response.data).end();
+        if (dbRes.response)
+          res.send(ServerResponse(dbRes.response, false, null, 200)).end();
       } catch (e) {
         res.send(ServerResponse(null, true, e, 200)).end();
       }
