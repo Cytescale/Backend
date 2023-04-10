@@ -250,7 +250,7 @@ class DBHelper {
     }
   }
 
-  async getRecordsbyPID(uid) {
+  async getRecordsbyPID2(uid) {
     try {
       if (!uid) throw "Insufficient patient id";
       const { data, error } = await this.supaClient
@@ -273,6 +273,22 @@ class DBHelper {
         }
       }
       if (records.length > 0) return MRepsonse(records, false, null);
+      else throw "Cannot compile records";
+    } catch (e) {
+      return MRepsonse(null, true, e);
+    }
+  }
+
+  async getRecordsbyPID(uid) {
+    try {
+      if (!uid) throw "Insufficient patient id";
+      const { data, error } = await this.supaClient
+        .from(RECORD_TABLE)
+        .select()
+        .eq("patient_uid", uid);
+      if (error || !data) throw error ? error : "Some error occurred";
+      if (data.length == 0) throw "No such records found";
+      if (data.length > 0) return MRepsonse(data, false, null);
       else throw "Cannot compile records";
     } catch (e) {
       return MRepsonse(null, true, e);
